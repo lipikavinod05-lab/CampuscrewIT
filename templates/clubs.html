@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% from "_macros.html" import logo, empty %}
+{% block title %}Clubs{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Clubs</h1><p class="muted">Each club gets an emblem automatically. Upload its real logo to replace it.</p></div>
+  <div style="min-width:240px"><label class="sr" for="q">Search clubs</label><input id="q" type="search" placeholder="Search clubs" data-filter="#club-grid"></div></div>
+{% if is_admin %}<details class="panel"><summary><span class="plus">+</span>Add a club</summary><div class="body">
+<form method="post" class="stack"><div class="row"><div><label for="cn">Club name</label><input id="cn" name="club_name" required></div>
+<div><label for="cc">Category</label><input id="cc" name="category" placeholder="Technology, Cultural, Social" required></div></div>
+<div><button>Save club</button></div></form></div></details>{% endif %}
+<div class="club-grid" id="club-grid">
+{% for c in clubs %}
+<article class="card club" style="--i:{{ loop.index0 }}" data-search="{{ (c.club_name ~ ' ' ~ c.category)|lower }}">
+  <div class="club-top">{{ logo(c.club_name, c.category, c.logo, 64) }}<div><h3>{{ c.club_name }}</h3><span class="pill">{{ c.category }}</span></div></div>
+  <div class="muted">{{ c.event_count }} event{{ '' if c.event_count == 1 else 's' }} planned</div>
+  {% if is_admin %}<div class="club-actions">
+    <form method="post" action="{{ url_for('club_logo', club_id=c.club_id) }}" enctype="multipart/form-data">
+      <input type="file" id="f{{ c.club_id }}" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" data-autosubmit>
+      <label for="f{{ c.club_id }}" class="btn ghost small" style="margin:0;cursor:pointer">{{ 'Change logo' if c.logo else 'Upload logo' }}</label></form>
+    {% if c.logo %}<form method="post" action="{{ url_for('club_logo', club_id=c.club_id) }}"><input type="hidden" name="remove" value="1"><button class="small danger">Remove</button></form>{% endif %}
+  </div>{% endif %}
+</article>
+{% endfor %}
+</div>
+{% endblock %}

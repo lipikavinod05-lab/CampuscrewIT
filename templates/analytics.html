@@ -1,0 +1,41 @@
+{% extends "base.html" %}{% from "_macros.html" import avatar, empty %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Analytics</h1><p class="muted">Who is carrying the load, who shows up, and where help is missing.</p></div>
+<div class="inline"><a class="btn ghost small" href="{{ url_for('export_vol') }}">Download volunteer report</a><a class="btn ghost small" href="{{ url_for('export_roles') }}">Download role report</a></div></div>
+<div class="two" style="margin-bottom:1.2rem">
+<section class="card"><h2>Workload</h2><canvas id="w" aria-label="Assignments per volunteer"></canvas></section>
+<section class="card"><h2>Attendance</h2><canvas id="a" aria-label="Attendance percentage per volunteer"></canvas><p class="muted" id="na" hidden>Record attendance on the Assignments page to see this chart.</p></section></div>
+<section class="card scroll"><h2>Volunteer summary</h2>
+{% if vol %}<table><thead><tr><th>Volunteer</th><th>Assignments</th><th>Attended</th><th>Absences</th><th>Hours</th><th>Attendance</th></tr></thead><tbody>
+{% for v in vol %}<tr><td><div class="cell">{{ avatar(v.name) }}<b>{{ v.name }}</b></div></td><td>{{ v.total_assignments }}</td><td>{{ v.attended_events }}</td><td>{{ v.absences }}</td><td>{{ v.total_hours }}</td>
+<td>{% if v.attendance_percentage is not none %}<div class="cell"><div class="bar-mini" style="width:90px"><i style="width:{{ v.attendance_percentage }}%"></i></div>{{ v.attendance_percentage|round|int }}%</div>{% else %}<span class="muted">Not recorded</span>{% endif %}</td></tr>{% endfor %}</tbody></table>
+{% else %}{{ empty('No volunteers yet.') }}{% endif %}</section>
+<section class="card scroll"><h2>Role capacity</h2>
+{% if roles %}<table><thead><tr><th>Event</th><th>Role</th><th>Needed</th><th>Assigned</th><th>Fill</th><th>Unfilled</th></tr></thead><tbody>
+{% for r in roles %}<tr><td><b>{{ r.event }}</b></td><td>{{ r.role_name }}</td><td>{{ r.required_count }}</td><td>{{ r.assigned_count }}</td>
+<td><div class="bar-mini"><i style="width:{{ (100 * r.assigned_count / r.required_count)|round if r.required_count else 100 }}%"></i></div></td>
+<td>{% if r.unfilled_positions %}<span class="pill warn">{{ r.unfilled_positions }}</span>{% else %}<span class="pill ok">0</span>{% endif %}</td></tr>{% endfor %}</tbody></table>
+{% else %}{{ empty('No events yet.') }}{% endif %}</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const vol = {{ vol|tojson }};
+const css = getComputedStyle(document.documentElement);
+const ink = css.getPropertyValue('--muted').trim(), grid = css.getPropertyValue('--line').trim();
+const teal = css.getPropertyValue('--lagoon').trim(), gold = css.getPropertyValue('--gold').trim();
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (window.Chart) {
+  Chart.defaults.font.family = css.getPropertyValue('--font-body');
+  const mk = (id, labels, data, label, color, max) => new Chart(document.getElementById(id), {type:'bar',
+    data:{labels, datasets:[{label, data, backgroundColor:color, borderRadius:10, borderSkipped:false, maxBarThickness:46}]},
+    options:{animation: reduce ? false : {duration:1100, easing:'easeOutQuart', delay:(c)=>c.dataIndex*90},
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:ink},grid:{display:false}}, y:{beginAtZero:true, max, ticks:{color:ink, precision:0}, grid:{color:grid}}}}});
+  if (vol.length) mk('w', vol.map(v=>v.name), vol.map(v=>v.total_assignments), 'Assignments', teal);
+  else document.getElementById('w').hidden = true;
+  const att = vol.filter(v=>v.attendance_percentage!==null);
+  if (att.length) mk('a', att.map(v=>v.name), att.map(v=>v.attendance_percentage), 'Attendance %', gold, 100);
+  else { document.getElementById('a').hidden = true; document.getElementById('na').hidden = false; }
+}
+</script>
+{% endblock %}

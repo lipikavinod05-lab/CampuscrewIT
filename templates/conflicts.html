@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Conflict check{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Conflict check</h1><p class="muted">See whether a volunteer is already booked during an event's time.</p></div></div>
+<div class="card"><form method="post" class="stack">
+<div class="row"><div><label for="v">Volunteer</label><select id="v" name="volunteer_id">{% for v in volunteers %}<option value="{{ v.volunteer_id }}">{{ v.name }}</option>{% endfor %}</select></div>
+<div><label for="r">Role</label><select id="r" name="role_id">{% for r in roles %}<option value="{{ r.role_id }}">{{ r.title }}, {{ r.role_name }}</option>{% endfor %}</select></div></div>
+<div><button>Check availability</button></div></form></div>
+{% if result %}<div class="card">
+{% if result.conflicts %}<div class="verdict bad"><span class="badge"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></span><div><h2 style="margin:0">Double-booked</h2><p class="muted" style="margin:0">This volunteer overlaps with:</p></div></div>
+<table style="margin-top:1rem"><tbody>{% for c in result.conflicts %}<tr><td><b>{{ c.title }}</b></td><td>{{ c.start_time|pretty_dt }} to {{ c.end_time|pretty_dt }}</td></tr>{% endfor %}</tbody></table>
+{% else %}<div class="verdict good"><span class="badge"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><h2 style="margin:0">Free for this event</h2><p class="muted" style="margin:0">No overlapping assignments found.</p></div></div>{% endif %}</div>{% endif %}
+{% endblock %}

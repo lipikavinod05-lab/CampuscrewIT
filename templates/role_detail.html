@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "_macros.html" import avatar, empty %}
+{% block title %}Find volunteers{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ role.role_name }} for {{ role.title }}</h1>
+<p class="muted">{{ role.start_time|pretty_dt }} to {{ role.end_time|pretty_dt }}. {{ filled.assigned_count }} of {{ filled.required_count }} filled.</p></div>
+<a class="btn ghost" href="{{ url_for('event_detail', event_id=role.event_id) }}">Back to event</a></div>
+<section class="card"><h2>Recommended volunteers</h2>
+<p class="muted">Everyone listed is free for this time slot. People whose skills fit come first, then those with the lightest workload.</p>
+{% for v in recs %}
+<div class="rec" style="--i:{{ [loop.index0, 10]|min }}">{{ avatar(v.name) }}
+  <div class="grow"><b>{{ v.name }}</b><br><small>{{ v.skills or 'No skills listed' }}{% if v.preferred_role %}, prefers {{ v.preferred_role }}{% endif %}</small></div>
+  {% if v.skill_match %}<span class="pill ok">Good match</span>{% endif %}
+  <span class="pill" title="Assignments they already have">{{ v.current_assignments }} booked</span>
+  <form method="post"><input type="hidden" name="volunteer_id" value="{{ v.volunteer_id }}"><button class="small">Assign</button></form>
+</div>
+{% else %}{{ empty('Nobody is free for this slot. Add more volunteers or move the event.', 'M12 8a3 3 0 1 0 0 .01M5 20c.5-3.5 3.2-5 7-5s6.5 1.5 7 5') }}{% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "_macros.html" import avatar, empty %}
+{% block title %}Volunteers{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Volunteers</h1><p class="muted">{{ volunteers|length }} people on the crew.</p></div>
+  <div style="min-width:240px"><label class="sr" for="q">Search volunteers</label><input id="q" type="search" placeholder="Search by name or skill" data-filter="#vol-body"></div></div>
+{% if is_admin %}<details class="panel"><summary><span class="plus">+</span>Add a volunteer</summary><div class="body">
+<form method="post" class="stack">
+<div class="row"><div><label for="n">Name</label><input id="n" name="name" required></div><div><label for="e">Email</label><input id="e" type="email" name="email" required></div></div>
+<div class="row"><div><label for="s">Skills, separated by commas</label><input id="s" name="skills" placeholder="python, design, public speaking"></div>
+<div><label for="p">Preferred role</label><select id="p" name="preferred_role"><option value="">No preference</option>{% for r in role_names %}<option>{{ r }}</option>{% endfor %}</select></div></div>
+<div><button>Save volunteer</button></div></form></div></details>{% endif %}
+<div class="card scroll">
+{% if volunteers %}<table><thead><tr><th>Name</th><th>Email</th><th>Skills</th><th>Preferred role</th></tr></thead><tbody id="vol-body">
+{% for v in volunteers %}<tr class="row-in" style="--i:{{ [loop.index0, 12]|min }}" data-search="{{ (v.name ~ ' ' ~ v.skills ~ ' ' ~ v.preferred_role)|lower }}">
+<td><div class="cell">{{ avatar(v.name) }}<b>{{ v.name }}</b></div></td><td>{{ v.email if is_admin else 'Visible to admins' }}</td><td>{{ v.skills or '—' }}</td>
+<td>{% if v.preferred_role %}<span class="pill">{{ v.preferred_role }}</span>{% else %}<span class="muted">—</span>{% endif %}</td></tr>{% endfor %}</tbody></table>
+{% else %}{{ empty('No volunteers yet. Add the first person to your crew.', 'M12 8a3 3 0 1 0 0 .01M5 20c.5-3.5 3.2-5 7-5s6.5 1.5 7 5') }}{% endif %}</div>
+{% endblock %}

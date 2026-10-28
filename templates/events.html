@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from "_macros.html" import logo, empty %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Events</h1><p class="muted">Pick an event to see its roles and who is on them.</p></div></div>
+{% if is_admin %}<details class="panel"><summary><span class="plus">+</span>Create an event</summary><div class="body">
+<form method="post" class="stack">
+<div class="row"><div><label for="c">Club</label><select id="c" name="club_name" required>{% for c in clubs %}<option>{{ c.club_name }}</option>{% endfor %}</select></div>
+<div><label for="t">Title</label><input id="t" name="title" required></div><div><label for="l">Location</label><input id="l" name="location"></div></div>
+<div class="row"><div><label for="st">Starts</label><input id="st" type="datetime-local" name="start_time" required></div><div><label for="en">Ends</label><input id="en" type="datetime-local" name="end_time" required></div></div>
+<div class="row"><div><label for="tc">Tech volunteers needed</label><input id="tc" type="number" min="0" name="tech_count" value="2"></div>
+<div><label for="ac">Art volunteers needed</label><input id="ac" type="number" min="0" name="art_count" value="2"></div>
+<div><label for="pc">PR/Management volunteers needed</label><input id="pc" type="number" min="0" name="pr_count" value="2"></div></div>
+<div><button>Create event</button></div></form></div></details>{% endif %}
+<div class="card scroll">
+{% if events %}<table><thead><tr><th>Event</th><th>Starts</th><th>Ends</th><th>Location</th></tr></thead><tbody>
+{% for e in events %}<tr class="row-in" style="--i:{{ [loop.index0, 12]|min }}"><td><a class="cell" href="{{ url_for('event_detail', event_id=e.event_id) }}" style="text-decoration:none;color:inherit">{{ logo(e.club_name, e.category, e.logo, 42) }}<span><b>{{ e.title }}</b><small>{{ e.club_name }}</small></span></a></td>
+<td>{{ e.start_time|pretty_dt }}</td><td>{{ e.end_time|pretty_dt }}</td><td>{{ e.location or '—' }}</td></tr>{% endfor %}</tbody></table>
+{% else %}{{ empty('No events yet. Create one to set up its volunteer roles.', 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4') }}{% endif %}</div>
+{% endblock %}

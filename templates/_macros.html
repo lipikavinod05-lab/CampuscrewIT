@@ -1,0 +1,19 @@
+{# Club emblem: uploaded logo if present, otherwise a generated badge with initials + category icon #}
+{% macro logo(name, category='', file='', size=44) %}
+{%- set st = club_style(name) -%}
+{%- if file -%}
+<span class="logo photo" style="--s:{{ size }}px" title="{{ name }}"><img src="{{ url_for('logo_file', filename=file) }}" alt="{{ name }} logo" loading="lazy"></span>
+{%- else -%}
+<span class="logo" style="--s:{{ size }}px;--c1:{{ st.c1 }};--c2:{{ st.c2 }};--fg:{{ st.fg }}" role="img" aria-label="{{ name }} logo" title="{{ name }}">{{ st.initials }}<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">{{ club_glyph(category)|safe }}</svg></span>
+{%- endif -%}
+{% endmacro %}
+
+{# Coloured initials avatar for people #}
+{% macro avatar(name) %}
+{%- set st = club_style(name) -%}
+<span class="avatar" style="--c1:{{ st.c1 }};--c2:{{ st.c2 }};--fg:{{ st.fg }}" aria-hidden="true">{{ name[:1]|upper }}{{ (name.split()[1][:1]|upper) if name.split()|length > 1 else '' }}</span>
+{% endmacro %}
+
+{% macro empty(text, icon='M4 7h16M4 12h16M4 17h10') %}
+<div class="empty"><svg viewBox="0 0 24 24"><path d="{{ icon }}"/></svg><span>{{ text|safe }}</span></div>
+{% endmacro %}

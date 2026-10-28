@@ -1,0 +1,53 @@
+{% extends "base.html" %}{% from "_macros.html" import logo, empty %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+{% if next_event %}
+<section class="hero" aria-label="Next event">
+  <div>
+    <div class="who in" style="--d:0">{{ logo(next_event.club_name, next_event.category, next_event.logo, 46) }}<span>{{ next_event.club_name }} is up next</span></div>
+    <h1 class="in" style="--d:1">{{ next_event.title }}</h1>
+    <div class="meta in" style="--d:2">
+      <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{ next_event.start_time|pretty_dt }}</span>
+      {% if next_event.location %}<span><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{{ next_event.location }}</span>{% endif %}
+    </div>
+    <a class="btn in" style="--d:3" href="{{ url_for('event_detail', event_id=next_event.event_id) }}">Fill open roles</a>
+  </div>
+  <div class="countdown" data-countdown="{{ next_event.start_time[:16].replace(' ', 'T') }}" aria-label="Time until the event starts">
+    <div class="tick in" style="--d:2"><b data-u="d">00</b><span>days</span></div>
+    <div class="tick in" style="--d:3"><b data-u="h">00</b><span>hours</span></div>
+    <div class="tick in" style="--d:4"><b data-u="m">00</b><span>minutes</span></div>
+  </div>
+</section>
+{% else %}
+<section class="hero" aria-label="Welcome">
+  <div>
+    <h1 class="in" style="--d:0">Your crew is ready. Your calendar is empty.</h1>
+    <p class="in" style="--d:1;color:var(--sidebar-text);max-width:46ch">Create an event and CampusCrew will set up the volunteer roles, suggest the right people and stop anyone being double-booked.</p>
+    {% if is_admin %}<a class="btn in" style="--d:2" href="{{ url_for('events') }}">Create the first event</a>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+<div class="ribbon" aria-label="Clubs"><div class="ribbon-track">
+  {% for pass in (1, 2) %}{% for c in clubs %}<a href="{{ url_for('clubs') }}" {% if pass == 2 %}aria-hidden="true" tabindex="-1"{% endif %}>{{ logo(c.club_name, c.category, c.logo, 34) }}{{ c.club_name }}</a>{% endfor %}{% endfor %}
+</div></div>
+
+<div class="stats">
+  <div><b data-count="{{ stats.clubs }}">{{ stats.clubs }}</b><span>Clubs</span></div>
+  <div><b data-count="{{ stats.volunteers }}">{{ stats.volunteers }}</b><span>Volunteers</span></div>
+  <div><b data-count="{{ stats.events }}">{{ stats.events }}</b><span>Events</span></div>
+  <div><b data-count="{{ stats.assignments }}">{{ stats.assignments }}</b><span>Active assignments</span></div>
+  <div><b data-count="{{ stats.unfilled }}">{{ stats.unfilled }}</b><span>Open positions</span></div>
+</div>
+
+<div class="two">
+  <section class="card"><h2>Coming up</h2>
+    {% if events %}<table><tbody>{% for e in events %}<tr class="row-in" style="--i:{{ loop.index0 }}">
+      <td><a class="cell" href="{{ url_for('event_detail', event_id=e.event_id) }}" style="text-decoration:none;color:inherit">{{ logo(e.club_name, e.category, e.logo, 40) }}<span><b>{{ e.title }}</b><small>{{ e.club_name }}</small></span></a></td>
+      <td style="text-align:right;white-space:nowrap">{{ e.start_time|pretty_dt }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}{{ empty('No events yet. Create one to get started.', 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4') }}{% endif %}</section>
+  <section class="card"><h2>Roles that still need people</h2>
+    {% if needs %}<table><tbody>{% for r in needs %}<tr class="row-in" style="--i:{{ loop.index0 }}"><td><b>{{ r.event }}</b><div class="muted">{{ r.role_name }}</div></td><td style="text-align:right"><span class="pill warn">{{ r.unfilled_positions }} open</span></td></tr>{% endfor %}</tbody></table>
+    {% else %}{{ empty('Every role is filled.', 'M5 12.5l4.5 4.5L19 7.5') }}{% endif %}</section>
+</div>
+{% endblock %}

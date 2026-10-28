@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "_macros.html" import logo, avatar, empty %}
+{% block title %}Assignments{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Assignments</h1><p class="muted">Record who showed up and how long they worked.</p></div>
+  <div style="min-width:240px"><label class="sr" for="q">Search assignments</label><input id="q" type="search" placeholder="Search volunteer or event" data-filter="#as-body"></div></div>
+<div class="card scroll">
+{% if assignments %}<table><thead><tr><th>Volunteer</th><th>Event and role</th><th>Date</th><th>Status</th><th>Hours</th>{% if is_admin %}<th>Attendance</th><th></th>{% endif %}</tr></thead><tbody id="as-body">
+{% for a in assignments %}<tr class="row-in" style="--i:{{ [loop.index0, 12]|min }}" data-search="{{ (a.volunteer ~ ' ' ~ a.event ~ ' ' ~ a.role ~ ' ' ~ a.club_name)|lower }}">
+<td><div class="cell">{{ avatar(a.volunteer) }}<span><b>{{ a.volunteer }}</b>{% if is_admin %}<small>{{ a.email }}</small>{% endif %}</span></div></td>
+<td><a class="cell" href="{{ url_for('event_detail', event_id=a.event_id) }}" style="text-decoration:none;color:inherit">{{ logo(a.club_name, a.category, a.logo, 34) }}<span><b>{{ a.event }}</b><small>{{ a.role }}</small></span></a></td>
+<td>{{ a.start_time|short_date }}</td>
+<td><span class="pill {{ 'ok' if a.status=='attended' else 'err' if a.status in ('absent','cancelled') else '' }}">{{ a.status|capitalize }}</span></td><td>{{ a.hours_worked or 0 }}</td>
+{% if is_admin %}<td>{% if a.status != 'cancelled' %}<form method="post" action="{{ url_for('attendance', aid=a.assignment_id) }}" class="inline">
+<select name="attended" aria-label="Attendance"><option value="1" {{ 'selected' if a.attended==1 }}>Present</option><option value="0" {{ 'selected' if a.attended==0 }}>Absent</option></select>
+<input type="number" step="0.25" min="0" name="hours_worked" value="{{ a.hours_worked or 0 }}" style="width:84px" aria-label="Hours worked"><button class="small">Save</button></form>{% endif %}</td>
+<td>{% if a.status != 'cancelled' %}<form method="post" action="{{ url_for('cancel', aid=a.assignment_id) }}" onsubmit="return confirm('Cancel this assignment?')"><button class="small danger">Cancel</button></form>{% endif %}</td>{% endif %}</tr>{% endfor %}</tbody></table>
+{% else %}{{ empty('No assignments yet. Open an event and choose Find volunteers on a role.', 'M9 6h11M9 12h11M9 18h11') }}{% endif %}</div>
+{% endblock %}

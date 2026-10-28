@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% from "_macros.html" import logo, avatar %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block content %}
+<div class="page-head"><div class="cell" style="gap:1.1rem">{{ logo(event.club_name, event.category, event.logo, 76) }}
+  <div><h1 style="margin:0">{{ event.title }}</h1><p class="muted">{{ event.club_name }}, {{ event.location or 'location to be announced' }}</p>
+  <p class="muted">{{ event.start_time|pretty_dt }} to {{ event.end_time|pretty_dt }}</p></div></div>
+  <a class="btn ghost" href="{{ url_for('events') }}">Back to events</a></div>
+<div class="role-grid">
+{% for r in roles %}
+{% set pct = (r.assigned_count / r.required_count) if r.required_count else 1 %}{% set full = r.assigned_count >= r.required_count %}
+<article class="card role" style="--i:{{ loop.index0 }}">
+  <div class="role-top">
+    <div class="ring {{ 'full' if full }}" style="--c:176;--off:{{ (176 * (1 - [pct,1]|min))|round(1) }}" role="img" aria-label="{{ r.assigned_count }} of {{ r.required_count }} filled">
+      <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="28"/><circle class="bar" cx="32" cy="32" r="28"/></svg><b>{{ r.assigned_count }}/{{ r.required_count }}</b></div>
+    <div><h3>{{ r.role_name }}</h3><span class="pill {{ 'ok' if full else 'warn' }}">{{ 'Full' if full else (r.required_count - r.assigned_count)|string ~ ' still needed' }}</span></div>
+  </div>
+  <div class="members">{% for n in members.get(r.role_id, []) %}<span class="member" style="--i:{{ loop.index0 }}">{{ avatar(n) }}{{ n }}</span>{% else %}<span class="muted">Nobody assigned yet.</span>{% endfor %}</div>
+  {% if is_admin and not full %}<div><a class="btn small" href="{{ url_for('role_detail', role_id=r.role_id) }}">Find volunteers</a></div>{% endif %}
+</article>
+{% endfor %}
+</div>
+{% endblock %}

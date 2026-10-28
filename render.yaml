@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: campuscrew
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --threads 4 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false   # you will be asked to type this in the Render dashboard
+      # NOTE: Render's free plan has no persistent disk, so data resets on redeploy/restart.
+      # For permanent data use PythonAnywhere (see DEPLOY.md) or a paid Render plan + disk:
+      # - key: DATABASE_PATH
+      #   value: /var/data/campuscrew.db
